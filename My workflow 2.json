@@ -1,0 +1,398 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "923172ac-4adc-406a-be39-1b50e8355e9e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        128
+      ],
+      "id": "21402905-8cb6-45cd-8726-f7e7df7f76ed",
+      "name": "Webhook",
+      "webhookId": "27cfc854-caf9-4e95-8dc3-98273eb52986"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "03b204e5-87a0-41ff-addf-24955d3d02b8",
+              "name": "=LeadName",
+              "value": "={{ $json.body.LeadName }}",
+              "type": "string"
+            },
+            {
+              "id": "81825846-5b05-4c46-8a8f-1bd3f8bba7f2",
+              "name": "=LeadEmail",
+              "value": "={{ $json.body.LeadEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "915aaf09-23b1-4c67-a354-b6ac32218965",
+              "name": "=LeadMessage",
+              "value": "={{ $json.body.LeadMessage }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        128
+      ],
+      "id": "bf1bcfbe-48f1-4565-96af-2c2fcbc9eacf",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.1-8b-instant\",\n  \"temperature\": 0.7,\n  \"max_tokens\": 200,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a warm, professional receptionist for a dental clinic. The business owner is Dr. Smith. Write a personalized email response to the lead's message. Never sound like a template. Keep under 150 words. End with a clear next step. Sign off as 'Dr. Smith from Bright Smile Dental'.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Lead name: {{ $json.LeadName }}\\nLead message: {{ $json.LeadMessage }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -336,
+        128
+      ],
+      "id": "d9430abe-09ed-4693-9350-40ed59028e21",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ZQewqtValRSFA5fF",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "onboarding@resend.dev"
+            },
+            {
+              "name": "to",
+              "value": "=anasfahd82@gmail.com"
+            },
+            {
+              "name": "subject",
+              "value": "Thank you for contacting Bright Smile Dental"
+            },
+            {
+              "name": "html",
+              "value": "={{ $json.escapedHtml }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        96,
+        128
+      ],
+      "id": "0f0f48ce-0a0f-4c2b-ab14-d5eec18c0de9",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ZQewqtValRSFA5fF",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/AC16f38f6634f512cbf400f8694cc2665a/Messages.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "From",
+              "value": "+13074174292"
+            },
+            {
+              "name": "To",
+              "value": "+212622965442"
+            },
+            {
+              "name": "Body",
+              "value": "=New lead from {{ $('Code in JavaScript').first().json.LeadName }}. \nMessage: {{ $('Code in JavaScript').first().json.LeadMessage }}\nEmail: {{ $('Code in JavaScript').first().json.LeadEmail }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        128
+      ],
+      "id": "57aa502f-6b31-4883-80e4-94bbc17450f0",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "hIiDLVPR9BuEkrrR",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiContent = $input.first().json.choices[0].message.content;\n\nconst leadName = $('Edit Fields').first().json.LeadName;\nconst leadEmail = $('Edit Fields').first().json.LeadEmail;\nconst leadMessage = $('Edit Fields').first().json.LeadMessage;\n\nconst htmlContent = aiContent\n  .replace(/&/g, '&amp;')\n  .replace(/</g, '&lt;')\n  .replace(/>/g, '&gt;')\n  .replace(/\\n/g, '<br>');\n\nreturn [{\n  json: {\n    escapedHtml: htmlContent,\n    LeadName: leadName,\n    LeadEmail: leadEmail,\n    LeadMessage: leadMessage\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        128
+      ],
+      "id": "203bb842-9e75-4a29-825e-a8ec46d7ff7b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1rF6Q7n71IMjlxuvKggOyT_EFVBqBbVhjyDhNWhAjiZU",
+          "mode": "list",
+          "cachedResultName": "5 min receptionist",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rF6Q7n71IMjlxuvKggOyT_EFVBqBbVhjyDhNWhAjiZU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rF6Q7n71IMjlxuvKggOyT_EFVBqBbVhjyDhNWhAjiZU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "LeadName": "={{ $('Code in JavaScript').first().json.LeadName }}",
+            "LeadEmail": "={{ $('Code in JavaScript').first().json.LeadEmail }}",
+            "LeadMessage": "={{ $('Code in JavaScript').first().json.LeadMessage }}",
+            "AIResponse": "={{ $('Code in JavaScript').first().json.escapedHtml }}",
+            "Timestamp": "={{ $now.toISO() }}",
+            "Status": "Email sent - SMS queued"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "LeadName",
+              "displayName": "LeadName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LeadEmail",
+              "displayName": "LeadEmail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LeadMessage",
+              "displayName": "LeadMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AIResponse",
+              "displayName": "AIResponse",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        128
+      ],
+      "id": "e3836199-4669-46af-8f4d-07c8a28b0f02",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5xRa7aHfdF3JUqvX",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c5e386a5-cdf5-4631-83aa-377cf2767988",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7aa1ab8f15d334baabdf1efa5d5475d46152f014738ef17263af6cb004ed800"
+  },
+  "id": "gMnX4xwrgp0qRUyt",
+  "tags": []
+}
